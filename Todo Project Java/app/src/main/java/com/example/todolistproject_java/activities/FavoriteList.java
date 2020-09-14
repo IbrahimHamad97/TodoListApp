@@ -27,12 +27,14 @@ public class FavoriteList extends AppCompatActivity {
     ArrayList<HashMap<String, String>> todosList;
     public static final String MyPREFERENCES = "MyFavoritePrefs";
     SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
     ArrayList<String> JSONObjectsStrings;
 
     private String userId;
     private String id;
     private String title;
     private String completed;
+    private final String SPNAME = "TodoNo: ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +42,14 @@ public class FavoriteList extends AppCompatActivity {
         setContentView(R.layout.activity_favorite_list);
         listView = findViewById(R.id.favoriteList);
         todosList = new ArrayList<>();
-        sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_APPEND);
+        SharedPreferences.Editor editor;
+        if (getIntent().getExtras() != null){
+            writeData();
+        }
 
         try {
-            todosList = loadData();
+            todosList = readData();
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -54,15 +60,13 @@ public class FavoriteList extends AppCompatActivity {
         listView.setAdapter(adapter);
     }
 
-    private ArrayList<HashMap<String, String>> loadData() throws JSONException {
-        ArrayList<HashMap<String, String>> todosList = new ArrayList<>();
+    private void writeData(){
         userId = getIntent().getStringExtra("userId");
         id = getIntent().getStringExtra("id");
         title = getIntent().getStringExtra("title");
         completed = getIntent().getStringExtra("completed");
-        ArrayList<String> JSONObjectsStrings = new ArrayList<>();
 
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor = sharedPreferences.edit();
         JSONObject todo = new JSONObject();
         try {
             todo.put("userId", userId);
@@ -72,14 +76,20 @@ public class FavoriteList extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d("TAG", "loadData: " + todo.toString());
-        editor.putString("todo", todo.toString());
-        editor.commit();
+        editor.putString(SPNAME + id, todo.toString());
+        editor.apply();
+    }
 
-        String jsonStr = sharedPreferences.getString("todo", null );
-        JSONObjectsStrings.add(jsonStr);
-        Log.d("TAG", "loadData: " + jsonStr);
-        Log.d("TAG", "loadData: " + JSONObjectsStrings.toString());
+    private ArrayList<HashMap<String, String>> readData() throws JSONException {
+        ArrayList<HashMap<String, String>> todosList = new ArrayList<>();
+        ArrayList<String> JSONObjectsStrings = new ArrayList<>();
+        String jsonStr;
+        for (int i =0; i < 200; i++){
+            if (sharedPreferences.getString(SPNAME + i, null ) != null){
+                jsonStr = sharedPreferences.getString(SPNAME + i, null );
+                JSONObjectsStrings.add(jsonStr);
+            }
+        }
         for (int i = 0; i < JSONObjectsStrings.size(); i++) {
             JSONObject jsonObj = new JSONObject(JSONObjectsStrings.get(i));
 
@@ -96,8 +106,8 @@ public class FavoriteList extends AppCompatActivity {
             todosList.add(todoItem);
         }
         return todosList;
-
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
