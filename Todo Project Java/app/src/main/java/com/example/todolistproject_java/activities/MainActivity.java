@@ -41,8 +41,11 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     ArrayList<HashMap<String, String>> todosList;
     public static final String MyPREFERENCES = "MyPrefs";
+    public static final String MyFAVPREFERENCES = "MyFavoritePrefs";
     SharedPreferences sharedpreferences;
+    SharedPreferences favsharedpreferences;
     ArrayList<String> JSONObjectsStrings;
+    private final String SPNAME = "TodoNo: ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,6 +197,17 @@ public class MainActivity extends AppCompatActivity {
                     R.layout.list_item, new String[]{ "userId","id","title","completed"},
                     new int[]{R.id.userId, R.id.id, R.id.title, R.id.completed});
             listView.setAdapter(adapter);
+            checkFavorites();
+        }
+    }
+
+    private void checkFavorites() {
+        favsharedpreferences = getSharedPreferences(MyFAVPREFERENCES, Context.MODE_PRIVATE);
+        for (int i =0; i < TODO_LIST_DATA_SIZE; i++){
+            if (favsharedpreferences.getString(SPNAME + i, null ) != null){
+                Object hi = listView.getItemAtPosition(i-1);
+                Log.d(TAG, "Meow " + hi.toString());
+            }
         }
     }
 }
